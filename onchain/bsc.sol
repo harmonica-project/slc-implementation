@@ -28,12 +28,12 @@ contract BSC {
         string dataHash;
     }
 
-    address[] private participants;
-    address[] private oracles;
-    address[] private mediators;
-    mapping(string => Clause) clauses;
-    mapping(string => DataProof) dataProofs;
-    string slcHash;
+    address[] public participants;
+    address[] public oracles;
+    address[] public mediators;
+    mapping(string => Clause) public clauses;
+    mapping(string => DataProof) public dataProofs;
+    string public slcHash;
 
     ///// CONTRACT EVENTS /////
 
