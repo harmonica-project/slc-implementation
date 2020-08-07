@@ -1,0 +1,58 @@
+{
+    "$class": "org.pantheonsorbonne.rt.RefrigeratedTransportationModel",
+    "contractId": "0",
+    "buyer": {
+        "$class": "org.accordproject.cicero.contract.AccordParty",
+        "partyId": "Ice Cream and co."
+    },
+    "supplier": {
+        "$class": "org.accordproject.cicero.contract.AccordParty",
+        "partyId": "Popsicles factory"
+    },
+    "buyerLocation": "90 Rue de Tolbiac, 75013 PARIS",
+    "buyerRepresentant": "Nicolas Six",
+    "buyerPubKey": "0xaaa9De2C0f602e527A460Df3B39FB59FcA04b4Bb",
+    "buyerSignature": "0x0",
+    "supplierLocation": "55 Rue de l'Elysée, 75008 PARIS",
+    "supplierRepresentant": "Jean Dupont",
+    "supplierPubKey": "0xbbb7BEe89a40EC9F8EAc805F689c78968Fea39eF",
+    "supplierSignature": "0x0",
+    "supplierBankInfo": "(fake) FR76 3000 1007 9412 3456 7890 185",
+    "bscPubAddress": "0x0",
+    "devicePubKey": "0xccc476cBC7aB01ef016b3556Baa89e84cC8698c8",
+    "deviceCompromized": false,
+    "devicePenalty": 10,
+    "deliveryPointLocation": "90 Rue de Tolbiac, 75013 PARIS",
+    "daysToDelivery": 7,
+    "maxTemperature": -5,
+    "orderPrice": 4500,
+    "orderPriceLitteral": "Forty-five Hundred Euros",
+    "orderCurrency": "Euros",
+    "daysToInvoice": 4,
+    "products": [
+        {
+            "$class": "org.pantheonsorbonne.rt.Product",
+            "id": "1",
+            "desc": "Lemon popsicle",
+            "qt": 10000,
+            "unitPrice": 0.10,
+            "totalPrice": 1000
+        },
+        {
+            "$class": "org.pantheonsorbonne.rt.Product",
+            "id": "2",
+            "desc": "Raspberry popsicle",
+            "qt": 5000,
+            "unitPrice": 0.10,
+            "totalPrice": 500
+        },
+        {
+            "$class": "org.pantheonsorbonne.rt.Product",
+            "id": "3",
+            "desc": "Mystery popsicle",
+            "qt": 20000,
+            "unitPrice": 0.15,
+            "totalPrice": 3000
+        }
+    ]
+  }

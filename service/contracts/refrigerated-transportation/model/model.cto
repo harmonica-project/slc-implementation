@@ -1,16 +1,43 @@
-namespace org.accordproject.empty
+namespace org.pantheonsorbonne.rt
 
 import org.accordproject.cicero.contract.* from https://models.accordproject.org/cicero/contract.cto
 import org.accordproject.cicero.runtime.* from https://models.accordproject.org/cicero/runtime.cto
 
-// Template model
-asset EmptyContract extends AccordContract {
+asset Product identified by id {
+    o String id
+    o String desc
+    o Integer qt
+    o Double unitPrice
+    o Double totalPrice
 }
 
-// Request
-transaction EmptyRequest extends Request {
-}
+asset RefrigeratedTransportationModel extends AccordContract {
+    o AccordParty buyer
+    o String buyerPubKey
+    o String buyerLocation
+    o String buyerRepresentant
+    o String buyerSignature
 
-// Response
-transaction EmptyResponse extends Response {
+    o AccordParty supplier
+    o String supplierPubKey
+    o String supplierLocation
+    o String supplierRepresentant
+    o String supplierBankInfo
+    o String supplierSignature
+    
+    o String devicePubKey
+    o Boolean deviceCompromized 
+
+    o String bscPubAddress
+
+    o Product[] products
+    
+    o Double orderPrice
+    o String orderPriceLitteral
+    o String orderCurrency
+    o String deliveryPointLocation
+    o Integer daysToInvoice
+    o Double maxTemperature
+    o Integer daysToDelivery
+    o Double devicePenalty
 }

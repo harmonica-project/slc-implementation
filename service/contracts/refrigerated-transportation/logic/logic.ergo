@@ -12,10 +12,8 @@
  * limitations under the License.
  */
 
-namespace org.accordproject.empty
+namespace org.pantheonsorbonne.rt
 
-contract Empty over EmptyContract {
-  clause donothing(request : EmptyRequest) : EmptyResponse {
-    return EmptyResponse{}
-  }
+contract RefrigeratedTransportation over RefrigeratedTransportationModel {
+  
 }
