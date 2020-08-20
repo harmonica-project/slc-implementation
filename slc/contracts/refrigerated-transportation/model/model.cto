@@ -25,8 +25,13 @@ asset RefrigeratedTransportationModel extends AccordContract {
     o String supplierBankInfo
     o String supplierSignature
     
+    o AccordParty mediator
+    o String mediatorPubKey
+    o String mediatorLocation
+    o String mediatorRepresentant
+
+
     o String devicePubKey
-    o Boolean deviceCompromized 
 
     o String bscPubAddress
 
@@ -36,8 +41,8 @@ asset RefrigeratedTransportationModel extends AccordContract {
     o String orderPriceLitteral
     o String orderCurrency
     o String deliveryPointLocation
-    o Integer daysToInvoice
+    o Integer daysToAgreement
+    o Integer daysToPayment
     o Double maxTemperature
     o Integer daysToDelivery
-    o Double devicePenalty
 }

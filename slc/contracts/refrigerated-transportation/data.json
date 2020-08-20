@@ -9,8 +9,15 @@
         "$class": "org.accordproject.cicero.contract.AccordParty",
         "partyId": "Popsicles factory"
     },
+    "mediator": {
+        "$class": "org.accordproject.cicero.contract.AccordParty",
+        "partyId": "Mediator Inc."
+    },
     "buyerLocation": "90 Rue de Tolbiac, 75013 PARIS",
     "buyerRepresentant": "Nicolas Six",
+    "mediatorLocation": "1 Dwarf Street, London",
+    "mediatorRepresentant": "John Doe",
+    "mediatorPubKey": "0xddd233F4d703107bebd3B0fDAF058b047B9B63cB",
     "buyerPubKey": "0xaaa9De2C0f602e527A460Df3B39FB59FcA04b4Bb",
     "buyerSignature": "0x0",
     "supplierLocation": "55 Rue de l'Elysée, 75008 PARIS",
@@ -20,15 +27,14 @@
     "supplierBankInfo": "(fake) FR76 3000 1007 9412 3456 7890 185",
     "bscPubAddress": "0x0",
     "devicePubKey": "0xccc476cBC7aB01ef016b3556Baa89e84cC8698c8",
-    "deviceCompromized": false,
-    "devicePenalty": 10,
     "deliveryPointLocation": "90 Rue de Tolbiac, 75013 PARIS",
     "daysToDelivery": 7,
     "maxTemperature": -5,
     "orderPrice": 4500,
     "orderPriceLitteral": "Forty-five Hundred Euros",
     "orderCurrency": "Euros",
-    "daysToInvoice": 4,
+    "daysToPayment": 4,
+    "daysToAgreement": 1,
     "products": [
         {
             "$class": "org.pantheonsorbonne.rt.Product",
