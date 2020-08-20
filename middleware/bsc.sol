@@ -10,24 +10,34 @@ contract BSC {
     ///// CONTRACT DATA /////
 
     struct Participant {
+        //binding participants to their signature
         address pAddress;
         string signature;
     }
 
     struct Clause {
-        //mapping participants to their signature
         string id;
         mapping(uint => Participant) participants;
         uint nbParticipants;
-        string status;
+        ClauseState state;
+
+        //When a clause is signed, it may change the state of the contract
+        ContractState contractStateChange;
     }
 
     struct DataProof {
         string id;
         address oAddress;
         string dataHash;
+        bool dataValid;
     }
 
+    enum ContractState{AwaitingSignature, InExecution, Terminated, Completed, Litigation, Cancelled, None}
+    enum ClauseState{Cancelled, Awaiting, Accepted}
+
+    ContractState cState;
+    //Memorizes the old state of the contract during litigation
+    ContractState cOldState;
     address[] public participants;
     address[] public oracles;
     address[] public mediators;
@@ -37,29 +47,23 @@ contract BSC {
 
     ///// CONTRACT EVENTS /////
 
+    // event to inform parties about a contract state change
+    event ContractStateChange(ContractState newState);
+
     // event to inform parties about a Clause update
-    event ClauseUpdate(string id, string status);
+    event ClauseStateChange(string id, ClauseState newState);
 
     // event to inform parties about an added clause
     event ClauseAdded(string id, address pAddress);
-
-    // event to inform parties about a deleted clause (by a mediator)
-    event ClauseRemoved(string id, address mAddress);
-
-    // event to inform parties about the cancellation of a clause (by a mediator)
-    event ClauseCancelled(string id, address mAddress);
 
     // event to inform parties about new data proof on the contract
     event NewDataProof(string id, address oAddress);
 
     // event to inform parties about a deleted proof on the contract (by a mediator)
-    event DataProofDeleted(string id, address mAddress);
+    event DataProofVoided(string id, address mAddress);
 
     // event to inform parties about the contract signature
-    event slcHashAdded(string slcHash, address pAddress);
-
-    // event to inform parties about the removal of the signature by a mediator
-    event slcHashRemoved(address mAddress);
+    event SLCHashAdded(string slcHash, address pAddress);
 
     ///// CONTRACT MODIFIERS /////
 
@@ -145,21 +149,56 @@ contract BSC {
 
     // ensures the clause is not cancelled
     modifier clauseNotCancelled(string memory cId) {
-        if(strHash(clauses[cId].status) == strHash("cancelled")) {
+        if(clauses[cId].state == ClauseState.Cancelled) {
             revert("Clause is cancelled");
         }
         _;
     }
+
+    // check the state of the contract
+    modifier isInLitigation() {
+        if(cState != ContractState.Litigation) {
+            revert("Contract state is incorrect to perform this action");
+        }
+        _;
+    }
+
+    // check the state of the contract (negative)
+    modifier isNotInLitigation() {
+        if(cState == ContractState.Litigation) {
+            revert("Contract state is incorrect to perform this action");
+        }
+        _;
+    }
+
+    // check if the contract execution is done, if so execution of functions are impossible
+    modifier isNotFinished() {
+        if(cState == ContractState.Terminated || cState == ContractState.Cancelled || cState == ContractState.Completed) {
+            revert("Contract execution is completed, no further action can be performed");
+        }
+        _;
+    }
+
+    ///// CONTRACT FUNCTIONS /////
 
     // returns a hash of a string, used to compare them even between memory/storage values
     function strHash(string memory str) private pure returns(bytes32 ret) {
         return keccak256(abi.encodePacked(str));
     }
 
-    ///// CONTRACT FUNCTIONS /////
+    function changeContractState(ContractState newState) private {
+        cState = newState;
+        emit ContractStateChange(newState);
+    }
 
-    function addClause(string memory cId, address[] memory ps) public contractNotSigned clauseDoesNotExists(cId) isParticipant {
-        Clause memory c = Clause(cId, ps.length, "awaiting");
+    function changeClauseState(string memory cId, ClauseState newState) private {
+        clauses[cId].state = newState;
+        emit ClauseStateChange(cId, newState);
+    }
+
+    //add a clause to the contract
+    function addClause(string memory cId, address[] memory ps, ContractState cNewState) public contractNotSigned clauseDoesNotExists(cId) isParticipant isNotFinished {
+        Clause memory c = Clause(cId, ps.length, ClauseState.Awaiting, cNewState);
         clauses[cId] = c;
 
         for(uint i = 0; i < ps.length; i++) {
@@ -174,13 +213,7 @@ contract BSC {
 
         emit ClauseAdded(cId, msg.sender);
     }
-
-    // remove a clause if needed (by mediator)
-    function removeClause(string memory cId) public clauseExists(cId) isMediator contractNotSigned {
-        delete clauses[cId];
-        emit ClauseRemoved(cId, msg.sender);
-    }
-
+    
     // check if a participant is correctly listed as a participant in the BSC
     function checkIfParticipantInContract(address pAddress) public view returns (bool ret) {
         for(uint i = 0; i < participants.length; i++) {
@@ -202,26 +235,39 @@ contract BSC {
     }
 
     // add the SLC hash to the contract
-    function addSlcHash(string memory _slcHash) public isParticipant contractNotSigned {
+    function addSlcHash(string memory _slcHash) public isParticipant contractNotSigned isNotFinished {
         slcHash = _slcHash;
-        emit slcHashAdded(slcHash, msg.sender);
+        changeContractState(ContractState.InExecution);
+        emit SLCHashAdded(slcHash, msg.sender);
     }
 
-    // remove the SLC hash to the contract if needed
-    function removeSlcHash() public isMediator contractSigned {
-        slcHash = "";
-        emit slcHashRemoved(msg.sender);
+    // cancel the contract before its signature
+    function cancelContract() public isMediator contractNotSigned isNotFinished {
+        changeContractState(ContractState.Cancelled);
+    }
+
+    // terminate the contract if needed (mediator)
+    function terminateContract() public isMediator contractSigned isInLitigation isNotFinished {
+        changeContractState(ContractState.Terminated);
+    }
+
+    // complete the contract if needed (mediator)
+    function completeContract() public isMediator contractSigned isInLitigation isNotFinished {
+        changeContractState(ContractState.Completed);
     }
 
     // sign a clause
-    function signClause(string memory cId, string memory signature) public clauseExists(cId) clauseNotCancelled(cId) isParticipant {
+    function signClause(string memory cId, string memory signature) public clauseExists(cId) clauseNotCancelled(cId) isParticipant isNotInLitigation isNotFinished {
         for(uint i = 0; i < clauses[cId].nbParticipants; i++) {
             if(clauses[cId].participants[i].pAddress == msg.sender) {
                 clauses[cId].participants[i].signature = signature;
 
                 if(checkIfClauseIsSigned(cId)) {
-                    clauses[cId].status = "accepted";
-                    emit ClauseUpdate(cId, "accepted");
+                    changeClauseState(cId, ClauseState.Accepted);
+
+                    if(clauses[cId].contractStateChange != ContractState.None) {
+                        changeContractState(clauses[cId].contractStateChange);
+                    }
                 }
 
                 return;
@@ -231,40 +277,34 @@ contract BSC {
         revert("Message sender is not a clause participant");
     }
 
-    // remove a clause signature if needed, only executable by mediators
-    function removeSignature(address pAddress, string memory cId) public clauseExists(cId) isMediator {
-        for(uint i = 0; i < clauses[cId].nbParticipants; i++) {
-            if(clauses[cId].participants[i].pAddress == pAddress) {
-                clauses[cId].participants[i].signature = "";
-                if(strHash(clauses[cId].status) == strHash("accepted")) {
-                    clauses[cId].status = "awaiting";
-                    emit ClauseUpdate(cId, "awaiting");
-                }
-                return;
-            }
-        }
-
-        revert("Participant address provided is not in the clause");
+    // cancel a clause if needed (by mediator)
+    function cancelClause(string memory cId) public clauseExists(cId) isMediator contractSigned isInLitigation isNotFinished {
+        changeClauseState(cId, ClauseState.Cancelled);
     }
 
-    // cancel a clause if needed (by mediator)
-    function cancelClause(string memory cId) public clauseExists(cId) isMediator contractSigned {
-        clauses[cId].status = "cancelled";
-        emit ClauseCancelled(cId, msg.sender);
-        emit ClauseUpdate(cId, "cancelled");
+    // change contract state to litigation, block execution of normal functions
+    function setContractInLitigation() public isMediator contractSigned isNotInLitigation isNotFinished {
+        cOldState = cState;
+        changeContractState(ContractState.Litigation);
+    }
+
+    // revert contract state to old state before litigation
+    function setContractOutLitigation() public isMediator contractSigned isInLitigation isNotFinished {
+        changeContractState(cOldState);
+        cOldState = ContractState.None;
     }
 
     // add data proof to contract
-    function addDataProof(string memory dId, string memory dHash) public dataProofDoesNotExists(dId) isOracle contractSigned {
-        DataProof memory d = DataProof(dId, msg.sender, dHash);
+    function addDataProof(string memory dId, string memory dHash) public dataProofDoesNotExists(dId) isOracle contractSigned isNotInLitigation isNotFinished {
+        DataProof memory d = DataProof(dId, msg.sender, dHash, true);
         dataProofs[dId] = d;
         emit NewDataProof(dId, msg.sender);
     }
 
     // remove data from contract if needed (by mediator)
-    function removeDataProof(string memory dId) public dataProofExists(dId) isMediator contractSigned {
-        delete dataProofs[dId];
-        emit DataProofDeleted(dId, msg.sender);
+    function voidDataProof(string memory dId) public dataProofExists(dId) isMediator contractSigned isInLitigation isNotFinished {
+        dataProofs[dId].dataValid = false;
+        emit DataProofVoided(dId, msg.sender);
     }
 
     // Contract constructor
@@ -272,5 +312,7 @@ contract BSC {
         participants = _participants;
         oracles = _oracles;
         mediators = _mediators;
+        changeContractState(ContractState.AwaitingSignature);
+        cOldState = ContractState.None;
     }
 }
