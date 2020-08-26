@@ -34,7 +34,7 @@ Hereafter, the Buyer will be associated with the Public key "0xaaa9De2C0f602e527
 4\. Delivery
 ----
 
-4.1 The Goods shall be delivered to: "90 Rue de Tolbiac, 75013 PARIS" 7 after the signature of the Contract. Cost of delivery is deemed included in the Price specified in clause 3.1 of this Contract.
+4.1 The Goods shall be delivered to: "90 Rue de Tolbiac, 75013 PARIS" 7 after the signature of the Contract. Cost of delivery is deemed included in the Price specified in clause 3.1 of this Contract. 
 
 4.2 The Goods must be stored and transported under -5.0. A Sensor, provided by the Buyer and identified by the public key "0xccc476cBC7aB01ef016b3556Baa89e84cC8698c8", will monitor the temperature of the Goods during the transportation and inform the Buyer and the Supplier if the temperature excess this threshold.
 

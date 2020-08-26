@@ -11,6 +11,30 @@ asset Product identified by id {
     o Double totalPrice
 }
 
+enum ShipmentStatus {
+    o Awaiting
+    o Delivered
+    o Perished
+    o Accepted
+}
+
+enum ContractStatus {
+    o InExecution
+    o Completed
+    o Litigation
+    o Terminated
+}
+
+concept InstanceState {
+    o ShipmentStatus shipmentStatus
+    o ContractStatus contractStatus
+    o DateTime signatureDatetime 
+    o DateTime deliveryDatetime optional
+    o DateTime agreementDatetime optional 
+    o Double paymentDue
+    o Boolean lateShipmentEnforced
+}
+
 asset RefrigeratedTransportationModel extends AccordContract {
     o AccordParty buyer
     o String buyerPubKey
@@ -32,6 +56,7 @@ asset RefrigeratedTransportationModel extends AccordContract {
 
 
     o String devicePubKey
+    o Double maxTemperature
 
     o String bscPubAddress
 
@@ -43,6 +68,6 @@ asset RefrigeratedTransportationModel extends AccordContract {
     o String deliveryPointLocation
     o Integer daysToAgreement
     o Integer daysToPayment
-    o Double maxTemperature
     o Integer daysToDelivery
+    o Double lateDeliveryPenaltyRatio
 }

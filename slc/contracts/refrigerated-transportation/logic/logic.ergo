@@ -14,6 +14,165 @@
 
 namespace org.pantheonsorbonne.rt
 
+import org.accordproject.cicero.runtime.*
+import org.accordproject.time.*
+
 contract RefrigeratedTransportation over RefrigeratedTransportationModel {
-  
+    clause init(): Response {
+        set state InstanceState{
+            signatureDatetime: now(),
+            contractStatus: InExecution,
+            shipmentStatus: Awaiting,
+            paymentDue: 0,
+            lateShipmentEnforced: false
+        }
+        
+        return Response{
+            newContractState: state
+        }
+    }
+
+    define function isContractNotEnded(): Boolean {
+        match state.contractStatus
+            with Terminated then return false
+            with Completed then return false
+            else return true
+    }
+
+    clause SetContractInLitigation(): Response {
+        enforce(state.contractStatus != Litigation)
+            else throw failure("Already in litigation");
+
+        set state.contractStatus = Litigation
+
+        return Response{
+            newContractState: state
+        }
+    }
+
+    clause EndLitigation(ContractStatus newContractStatus): Response {
+        enforce(state.contractStatus == Litigation)
+            else throw failure("Contract not in litigation");
+
+        set state.contractStatus = newContractStatus;
+
+        return Response{
+            newContractState: state
+        }
+    }
+
+    clause TemperatureExcess(temperature: Double) : Response {
+        enforce (temperature > contract.maxTemperature)
+            else throw failure("Temperature conforms the specifications of the contract.");
+        enforce (contractNotEnded())
+            else throw failure("Contract is terminated or completed: clauses are not enforceable anymore.");
+        enforce (state.contractStatus == Litigation)
+            else throw failure("Contract in litigation: resolve the conflict before calling clauses.");
+
+        set state.shipmentStatus = Perished;
+        set state.contractStatus = Terminated;
+        
+        return Response{
+            excess: temperature - contract.maxTemperature,
+            newContractState: state
+        }
+    }
+
+    clause LateShipment(): Response {
+        let diff = diffDurationAs(now(),state.signatureDatetime,~org.accordproject.time.TemporalUnit.days).amount;
+
+        enforce (!state.lateShipmentEnforced)
+            else throw failure("Clause already enforced.");
+        enforce (diff > contract.daysToDelivery)
+            else throw failure("Shipment is not late.");
+        enforce (contractNotEnded())
+            else throw failure("Contract is terminated or completed: clauses are not enforceable anymore.");
+        enforce (state.packageStatus == Accepted)
+            else throw failure("Package has been accepted by the Buyer: this clause is impossible to enforce now.");
+        enforce (state.contractStatus == Litigation)
+            else throw failure("Contract in litigation: resolve the conflict before calling clauses.");
+
+        set state.paymentDue = state.paymentDue + (contract.orderPrice * contract.lateDeliveryPenaltyRatio);
+        set state.lateShipmentEnforced = true;
+
+        return Response{
+            lateShipment: true,
+            penaltyApplied: (contract.orderPrice * contract.lateDeliveryPenaltyRatio),
+            newContractState: state
+        }
+    }
+
+    clause ShipmentDelivered(): Response {
+        enforce (contractNotEnded())
+            else throw failure("Contract is terminated or completed: clauses are not enforceable anymore.");
+        enforce (state.shipmentStatus != Delivered && state.shipmentStatus != Accepted);
+            else throw failure("Shipment already delivered.")
+        enforce (state.contractStatus == Litigation)
+            else throw failure("Contract in litigation: resolve the conflict before calling clauses.");
+
+        set state.shipmentStatus = Delivered;
+        set state.deliveryDatetime = now();
+
+        return Response{
+            newContractState: state
+        }
+    }
+
+    clause ShipmentAgreed(): Response {
+        enforce (contractNotEnded())
+            else throw failure("Contract is terminated or completed: clauses are not enforceable anymore.");
+        enforce (state.shipmentStatus != Accepted)
+            else throw failure("Shipment already accepted.");
+        enforce (state.contractStatus == Litigation)
+            else throw failure("Contract in litigation: resolve the conflict before calling clauses.");
+
+        set state.shipmentStatus = Accepted;
+        set state.agreementDatetime = now();
+
+        return Response{
+            newContractState: state
+        }
+    }
+
+    clause AutomaticAgreement(): Response {
+        let diff = diffDurationAs(now(),state.deliveryDatetime,~org.accordproject.time.TemporalUnit.days).amount;
+
+        enforce (contractNotEnded())
+            else throw failure("Contract is terminated or completed: clauses are not enforceable anymore.");
+        enforce (state.contractStatus == Litigation)
+            else throw failure("Contract in litigation: resolve the conflict before calling clauses.");
+        enforce (state.shipmentStatus != Accepted)
+            else throw failure("Shipment already accepted.");
+        enforce (diff > contract.daysToAgreement)
+            else throw failure("The Buyer still has time to agreed on the Goods delivered.");
+
+        set state.shipmentStatus = Accepted;
+        set state.agreementDatetime = now();
+
+        return Response{
+            automaticAgreement: true,
+            newContractState: state
+        }
+    }
+
+    clause BuyerPayment(amount: Double): Response {
+        enforce(state.paymentDue - amount > 0)
+            else throw failure("Impossible payment: contract payment due under 0 if done");
+        enforce (contractNotEnded())
+            else throw failure("Contract is terminated or completed: clauses are not enforceable anymore.");
+        enforce (state.contractStatus == Litigation)
+            else throw failure("Contract in litigation: resolve the conflict before calling clauses.");
+
+        set state.paymentDue = state.paymentDue - amount;
+
+        //if the package is accepted by the buyer and the remaining amount to pay is 0, the contract is Completed
+        if(state.packageStatus == Accepted && state.paymentDue == 0) {
+            set state.contractStatus = Completed;
+        }
+
+        return Response{
+            amountPaid: amount,
+            newContractState: state
+        }
+    }
 }
