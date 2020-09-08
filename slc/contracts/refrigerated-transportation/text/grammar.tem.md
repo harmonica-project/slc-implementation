@@ -22,17 +22,15 @@ Hereafter, the Buyer will be associated with the Public key {{ buyerPubKey }} an
 
 3.1 The total Price for the supply and delivery of the Goods under this Contract is {{ orderPrice }} ({{ orderPriceLitteral }}).
 
-3.2 The Seller must deliver the order within a maximum of {{ daysToDelivery }} after the signature of this Contract. Otherwise, the buyer is entitled to claim a late delivery penalty fee up to {{ lateDeliveryPenaltyRatio }}% of the value of the Goods.
+3.2 The Buyer must confirm or deny the good condition and order conformance of the Goods delivered in {{ daysToAgreement }} days. Otherwise, the payment shall become due to the Seller whatever the condition of the Goods delivered.
 
-3.3 The Buyer must confirm or deny the good condition and order conformance of the Goods delivered in {{ daysToAgreement }} days. Otherwise, the payment shall become due to the Seller whatever the condition of the Goods delivered.
+3.3 The Supplier shall invoice the Buyer on delivery of the Goods in accordance with this Contract and payment shall become due {{ daysToPayment }} calendar days after acceptation by the Buyer of the Goods. 
 
-3.4 The Supplier shall invoice the Buyer on delivery of the Goods in accordance with this Contract and payment shall become due {{ daysToPayment }} calendar days after acceptation by the Buyer of the Goods. 
-
-3.5 Payments shall be made in {{ orderCurrency }} by bank transfer to the following bank account of the Supplier: {{ supplierBankInfo }}.
+3.4 Payments shall be made in {{ orderCurrency }} by bank transfer to the following bank account of the Supplier: {{ supplierBankInfo }}.
 
 ## 4. Delivery
 
-4.1 The Goods shall be delivered to: {{ deliveryPointLocation }} {{ daysToDelivery }} days after the signature of the Contract. Cost of delivery is deemed included in the Price specified in clause 3.1 of this Contract. If the Goods are delivered late, Buyer is entitled to claim a penalty up to {{ lateDeliveryPenalty }}% of the Contract price.
+4.1 The Goods shall be delivered to: {{ deliveryPointLocation }} {{ daysToDelivery }} days after the signature of the Contract. Cost of delivery is deemed included in the Price specified in clause 3.1 of this Contract. If the Goods are delivered late, Buyer is entitled to claim a penalty up to {{lateDeliveryPenaltyRatio }}% of the Contract price.
 
 4.2 The Goods must be stored and transported under {{ maxTemperature }}. A Sensor, provided by the Buyer and identified by the public key {{ devicePubKey }}, will monitor the temperature of the Goods during the transportation and inform the Buyer and the Supplier if the temperature excess this threshold.  
 

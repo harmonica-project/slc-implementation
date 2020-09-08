@@ -29,7 +29,7 @@
     "devicePubKey": "0xccc476cBC7aB01ef016b3556Baa89e84cC8698c8",
     "deliveryPointLocation": "90 Rue de Tolbiac, 75013 PARIS",
     "daysToDelivery": 7,
-    "lateDeliveryPenalty": 0.1,
+    "lateDeliveryPenaltyRatio": 0.1,
     "maxTemperature": -5,
     "orderPrice": 4500,
     "orderPriceLitteral": "Forty-five Hundred Euros",

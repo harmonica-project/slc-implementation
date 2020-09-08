@@ -10,7 +10,7 @@
   "author": "Nicolas Six",
   "license": "ISC",
   "dependencies": {
-    "@accordproject/cicero-cli": "^0.21.0",
+    "@accordproject/cicero-cli": "^0.21.6",
     "express": "^4.17.1"
   }
 }

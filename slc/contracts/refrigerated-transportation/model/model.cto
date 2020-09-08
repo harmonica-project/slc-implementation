@@ -1,7 +1,7 @@
 namespace org.pantheonsorbonne.rt
 
-import org.accordproject.cicero.contract.* from https://models.accordproject.org/cicero/contract.cto
-import org.accordproject.cicero.runtime.* from https://models.accordproject.org/cicero/runtime.cto
+import org.accordproject.cicero.contract.*
+import org.accordproject.cicero.runtime.*
 
 asset Product identified by id {
     o String id
@@ -29,10 +29,40 @@ concept InstanceState {
     o ShipmentStatus shipmentStatus
     o ContractStatus contractStatus
     o DateTime signatureDatetime 
-    o DateTime deliveryDatetime optional
-    o DateTime agreementDatetime optional 
+    o DateTime deliveryDatetime 
+    o DateTime agreementDatetime  
     o Double paymentDue
     o Boolean lateShipmentEnforced
+}
+
+// REQUESTS
+
+transaction SetContractInLitigationRequest extends Request{}
+transaction EndLitigationRequest extends Request{}
+transaction TemperatureExcessRequest extends Request{}
+transaction LateShipmentRequest extends Request{}
+transaction ShipmentDeliveredRequest extends Request{}
+transaction ShipmentAgreedRequest extends Request{}
+transaction AutomaticAgreementRequest extends Request{}
+transaction BuyerPaymentRequest extends Request{}
+
+// RESPONSES
+
+transaction TemperatureExcessResponse extends Response {
+    o Double excess
+}
+
+transaction LateShipmentResponse extends Response {
+    o Boolean lateShipment
+    o Double penaltyApplied
+}
+
+transaction AutomaticAgreementResponse extends Response {
+    o Boolean automaticAgreement
+}
+
+transaction BuyerPaymentResponse extends Response {
+    o Double amountPaid
 }
 
 asset RefrigeratedTransportationModel extends AccordContract {

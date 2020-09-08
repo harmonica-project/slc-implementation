@@ -1,1 +1,1 @@
-{}
+{"$class":"org.pantheonsorbonne.rt.InstanceState","shipmentStatus":"Delivered","contractStatus":"InExecution","signatureDatetime":"2020-09-08T17:53:34.769+02:00","deliveryDatetime":"2020-09-08T17:53:36.269+02:00","agreementDatetime":"1970-01-01T02:00:00.000+02:00","paymentDue":0,"lateShipmentEnforced":false}
