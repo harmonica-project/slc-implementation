@@ -1,0 +1,115 @@
+version: '3.8'
+services:
+    # common_db for all the organizations
+    # (in production, every org should have its own db, but this is more convenient for bootstrapping this prototype)
+    common_db:
+        image: mongo:latest
+        environment:
+            - MONGO_INITDB_ROOT_USERNAME="admin"
+            - MONGO_INITDB_ROOT_PASSWORD="root"
+        ports:
+            - 27017:27017
+        volumes:
+            - common_db_data_container:/data/db
+    # common_frontend for all the organizations
+    # (same as db)
+    common_frontend:
+        build: ./frontend
+        image: nsix/frontend_service
+        ports:
+            - "5000:3000"
+        stdin_open: true
+        tty: true
+    # Organizations SLC
+    buyer_slc:
+        build: 
+            context: slc
+            dockerfile: Dockerfile
+        image: nsix/slc_service
+        environment:
+            - ROLE=BUYER
+        ports:
+            - "3000:3000"
+    seller_slc:
+        image: nsix/slc_service
+        ports:
+            - "3001:3000"
+        environment:
+            - ROLE=SELLER
+    mediator_slc:
+        image: nsix/slc_service
+        ports:
+            - "3002:3000"
+        environment:
+            - ROLE=MEDIATOR
+    device_slc:
+        image: nsix/slc_service
+        ports:
+            - "3003:3000"
+        environment:
+            - ROLE=DEVICE
+    # Organizations middlewares
+    buyer_middleware:
+        build: ./middleware/api
+        volumes:
+            - ./middleware/keystore/buyer.json:/api/keypair.json
+        image: nsix/middleware_service
+        ports:
+            - "4000:3000"
+        environment:
+            - ROLE=BUYER
+    seller_middleware:
+        image: nsix/middleware_service
+        volumes:
+            - ./middleware/keystore/seller.json:/api/keypair.json
+        ports:
+            - "4001:3000"
+        environment:
+            - ROLE=SELLER
+    mediator_middleware:
+        image: nsix/middleware_service
+        volumes:
+            - ./middleware/keystore/mediator.json:/api/keypair.json
+        ports:
+            - "4002:3000"
+        environment:
+            - ROLE=MEDIATOR
+    device_middleware:
+        image: nsix/middleware_service
+        volumes:
+            - ./middleware/keystore/device.json:/api/keypair.json
+        ports:
+            - "4003:3000"
+        environment:
+            - ROLE=DEVICE
+    # Organizations engines
+    buyer_engine:
+        build: ./engines/buyer
+        image: nsix/buyer_engine_service
+        ports:
+            - "6000:3000"
+        environment:
+            - ROLE=BUYER
+    seller_engine:
+        build: ./engines/seller
+        image: nsix/seller_engine_service
+        ports:
+            - "6001:3000"
+        environment:
+            - ROLE=SELLER
+    mediator_engine:
+        build: ./engines/mediator
+        image: nsix/mediator_engine_service
+        ports:
+            - "6002:3000"
+        environment:
+            - ROLE=MEDIATOR
+    device_engine:
+        build: ./engines/device
+        image: nsix/device_engine_service
+        ports:
+            - "6003:3000"
+        environment:
+            - ROLE=DEVICE
+volumes:
+    common_db_data_container:

@@ -22,7 +22,7 @@ const clauseToReq = {
  * makeResponse - build a response to return to the API
  * @param {Boolean} status true means that everything went well, false means that an error occurs or something is forbidden
  * @param {*} content the content to return
- * @param {*} code if an error occured, a code is return to indicate what went wrong
+ * @param {String} code if an error occured, a code is return to indicate what went wrong
  */
 function makeResponse(status, content, code) {
     if(status) {
@@ -60,6 +60,7 @@ function getClauseReq(clauseName) {
 function saveState(jsonState) {
     try {
         fs.writeFileSync(templateLocation + 'state.json', JSON.stringify(jsonState));
+        return true;
     }
     catch (e) {
         console.error("Writing state failed: " + e);
@@ -132,7 +133,9 @@ async function initContract(doSaveState = true) {
         clause.setData(data);
         
         return engine.init(clause).then(res => {
-            if(doSaveState) saveState(res.state);
+            if(doSaveState) {
+                if(!saveState(res.state)) return makeResponse(false, "Impossible to save state.", "SAVE_STATE_ERROR");
+            }
             if(res) return makeResponse(true, res.response);
             else return makeResponse(false, res, "CONTRACT_INITIALIZATION_FAILED");
         });
@@ -153,4 +156,6 @@ async function testLib() {
     console.log(initC, callOne, callTwo)
 }
 
-testLib()
+//testLib()
+
+module.exports = { makeRequest, initContract }

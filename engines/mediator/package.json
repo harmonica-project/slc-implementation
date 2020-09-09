@@ -1,8 +1,8 @@
 {
-  "name": "slc-service",
+  "name": "blockchain-middleware-service",
   "version": "1.0.0",
-  "description": "SLC service",
-  "main": "api.js",
+  "description": "Blockchain Middleware service",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node api.js"
@@ -10,7 +10,6 @@
   "author": "Nicolas Six",
   "license": "ISC",
   "dependencies": {
-    "@accordproject/cicero-cli": "^0.21.6",
     "express": "^4.17.1"
   }
 }
